@@ -95,20 +95,21 @@ def tp_gather(input_: torch.Tensor, dst: int = 0, dim: int = -1) -> torch.Tensor
     else: output_tensor = None
     return output_tensor
 
-def broadcast(input_: torch.Tensor, src: int = 0, group: Optional[ProcessGroup] = None):
+def broadcast_common(src: int = 0, group: Optional[ProcessGroup] = None):
     group = group or torch.distributed.group.WORLD
     ranks = torch.distributed.get_process_group_ranks(group)
     assert src in ranks, f"Invalid src rank ({src})"
     world_size = torch.distributed.get_world_size(group=group)
+    return world_size, group
+
+def broadcast(input_: torch.Tensor, src: int = 0, group: Optional[ProcessGroup] = None):
+    world_size, group = broadcast_common(src, group)
     if world_size == 1: return input_
     torch.distributed.broadcast(input_, src=src, group=group)
     return input_
 
 def broadcast_obj_list(obj_list: List[Any], src: int = 0, group: Optional[ProcessGroup] = None):
-    group = group or torch.distributed.group.WORLD
-    ranks = torch.distributed.get_process_group_ranks(group)
-    assert src in ranks, f"Invalid src rank ({src})"
-    world_size = torch.distributed.get_world_size(group=group)
+    world_size, group = broadcast_common(src, group)
     if world_size == 1: return obj_list
     torch.distributed.broadcast_object_list(obj_list, src=src, group=group)
     return obj_list
@@ -116,10 +117,7 @@ def broadcast_obj_list(obj_list: List[Any], src: int = 0, group: Optional[Proces
 def broadcast_tensor_dict(
     tensor_dict: Optional[Dict[Any, Union[torch.Tensor, Any]]] = None, src: int = 0, group: Optional[ProcessGroup] = None
     ) -> Dict[Any, Union[torch.Tensor, Any]]:
-    group = group or torch.distributed.group.WORLD
-    ranks = torch.distributed.get_process_group_ranks(group)
-    assert src in ranks, f"Invalid src rank ({src})"
-    world_size = torch.distributed.get_world_size(group=group)
+    world_size, group = broadcast_common(src, group)
     if world_size == 1: return tensor_dict
     rank = torch.distributed.get_rank()
     if rank == src:
