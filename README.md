@@ -16,7 +16,7 @@ First, you will need to initialize a distributed environment. You can use the `i
 ```py
 from tplib import init_dist_env
 
-init_dist_env(world_size=4, rank=0, distributed_init_method="tcp://localhost:23456")
+init_dist_env(world_size=2, rank=0, distributed_init_method="tcp://localhost:23456")
 ```
 
 > [!WARNING]
@@ -32,7 +32,7 @@ from tplib import Worker
 def print_rank(rank):
     print(f"I am process {rank}")
 
-worker = Worker(world_size=4)
+worker = Worker(world_size=2)
 
 worker.run(print_rank)
 ```
@@ -43,7 +43,7 @@ To create a tensor parallel group, you can use the `init_model_parallel` functio
 ```py
 from tplib import init_model_parallel
 
-init_model_parallel(tp_size=4)
+init_model_parallel(tp_size=2)
 ```
 
 To check if a TP group has been initialized, you can use the `model_parallel_is_initialized` function:
