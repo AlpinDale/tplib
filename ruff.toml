@@ -1,0 +1,28 @@
+line-length = 150
+
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    # "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    # "I",
+]
+ignore = [
+    # wildcard imports
+    "F405", "F403",
+    # lambda expression assignment
+    "E731",
+    # multi-statement
+    "E701", "E702",
+    # .strip() with multi-character strings
+    "B005",
+    # Loop control variable not used within loop body
+    "B007",
+]

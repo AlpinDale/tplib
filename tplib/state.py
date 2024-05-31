@@ -1,4 +1,5 @@
-import contextlib, torch; from typing import Optional
+import torch
+from typing import Optional
 
 _TP_GROUP = _DEVICE_WORLD_GROUP = _CPU_WORLD_GROUP = None
 _LOCAL_RANK = -1
@@ -25,17 +26,16 @@ def init_model_parallel(tp_size: int = 1, backend: Optional[str] = None):
     backend = backend or torch.distributed.get_backend()
     if world_size != tp_size: raise RuntimeError(f"world_size ({world_size}) not equal to TP size ({tp_size})")
     num_tp_groups = world_size // tp_size
-    rank = torch.distributed.get_rank()
     assert _TP_GROUP is None, "tensor model parallel group is already initialized"
     for i in range(num_tp_groups):
         ranks = range(i * tp_size, (i + 1) * tp_size)
         create_group_and_assign(ranks, backend, "_TP_GROUP")
 
 def ensure_init(tp_size: int, backend: Optional[str] = None) -> None:
-        backend = backend or torch.distributed.get_backend()
-        if not model_parallel_is_initialized(): init_model_parallel(tp_size, backend)
-        else: assert get_tp_world_size() == tp_size, ("TP group already initialized, but of unexpected size: "
-                                                      f"{get_tp_world_size()=} vs. {tp_size=}")
+    backend = backend or torch.distributed.get_backend()
+    if not model_parallel_is_initialized(): init_model_parallel(tp_size, backend)
+    else: assert get_tp_world_size() == tp_size, ("TP group already initialized, but of unexpected size: "
+                                                    f"{get_tp_world_size()=} vs. {tp_size=}")
 
 def model_parallel_is_initialized():
     return _TP_GROUP is not None
